@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>TABLA · Settings</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="options.css">
+  <script src="options.js" type="module"></script>
+</head>
+<body>
+<main>
+  <header>
+    <div class="header-bar">
+      <div class="brand"><img src="icons/icon48.png" width="40" height="40" alt=""><span class="brand-name">TABLA</span></div>
+      <div class="header-actions">
+        <a class="changelog-link" href="#changelog">What’s new ↓</a>
+        <button id="theme-toggle" type="button" aria-label="Switch theme">
+          <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+          <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z"/></svg>
+        </button>
+      </div>
+    </div>
+    <h1>Your tabs. Back where they belong.</h1>
+    <p>Group as you browse. Organize a whole window in one click. Keep a local record of your groups for the next restart.</p>
+  </header>
+  <section id="welcome" class="instructions">
+    <strong>A little setup, a lot less tab clutter.</strong>
+    <p>Pin TABLA, then click its icon for grouping, collapse controls, and saved sessions. Settings, pause, undo, and recovery are also available in the menu.</p>
+  </section>
+  <div class="settings-toolbar">
+    <h2>Settings</h2>
+    <span id="status" role="status"></span>
+    <button id="reset" type="button">Reset defaults</button>
+    <button id="discard" type="button">Discard</button>
+    <button id="save" class="primary" type="submit" form="settings">Save</button>
+  </div>
+  <form id="settings">
+    <section class="settings-card">
+      <div class="section-heading"><h2>Automatic grouping</h2><span class="pill" id="grouping-summary">Same domain</span></div>
+      <label class="toggle" for="enabled"><input id="enabled" name="enabled" type="checkbox"> Automatically group newly opened tabs</label>
+      <div class="controls">
+        <label for="groupBy">Group by<select id="groupBy" name="groupBy"><option value="domain">Same domain</option><option value="source">Same opening tab</option></select></label>
+        <label for="naming">Group naming convention<select id="naming" name="naming"><option value="domain">Domain</option><option value="host">Subdomain.domain</option><option value="full">Subdomain.domain.tld</option><option value="opener">Group opener’s title</option><option value="none">Nameless (no name)</option></select></label>
+      </div>
+      <p class="note">Domain matching uses the registered domain: docs.google.com and mail.google.com match. Separate sites such as alice.github.io and bob.github.io remain separate.</p>
+      <label class="toggle" for="combineExisting"><input id="combineExisting" name="combineExisting" type="checkbox" aria-describedby="combine-help"> Allow cross-domain links into existing groups</label>
+      <p class="note" id="combine-help">In domain mode, matching domains are needed to start a group. Once a group exists, this option allows links from any domain to join it.</p>
+      <div class="controls">
+        <label for="maxTabs">Maximum tabs per group<input id="maxTabs" name="maxTabs" type="number" min="0" max="999" step="1" required aria-describedby="max-help"></label>
+      </div>
+      <p id="max-help" class="note">0 = unlimited; otherwise choose 2–999. When an automatic group is full, the new tab stays outside. Grouping splits new sets as needed; existing groups are never split.</p>
+      <p class="note">Tabs that do not join a group keep the placement chosen by Chrome or their creator. TABLA only removes incompatible inherited group membership; Chrome may place the ungrouped tab at a group boundary. Tabs created inside a group are checked even when no opening-tab information is provided.</p>
+      <label class="toggle" for="removeSingle"><input id="removeSingle" name="removeSingle" type="checkbox"> Ungroup the last tab when a group drops to one tab</label>
+      <label class="toggle" for="autoCollapse"><input id="autoCollapse" name="autoCollapse" type="checkbox" aria-describedby="auto-collapse-help"> Automatically collapse inactive groups in the active window</label>
+      <p class="note" id="auto-collapse-help">Keep the selected tab’s group open and collapse other groups in the focused window. Selecting an ungrouped tab collapses every group. Applies when enabled, when switching tabs or windows, and after startup recovery finishes.</p>
+      <label class="toggle" for="focusExpandedGroup"><input id="focusExpandedGroup" name="focusExpandedGroup" type="checkbox" aria-describedby="focus-expanded-help"> Switch to the last active tab when expanding a group</label>
+      <p class="note" id="focus-expanded-help">Expanding a group returns to the tab you last used in it. If no previous tab is available, select its first tab. TABLA’s Expand buttons keep your current tab selected.</p>
+      <p class="note">Automatic grouping follows links opened from a source tab. Typing a new address in an existing tab does not reshuffle your groups. New group colors follow site favicons when available. Manually chosen group names and colors are preserved.</p>
+    </section>
+    <section class="settings-card">
+      <div class="section-heading"><h2>Menu grouping action</h2><span class="pill">Current window only</span></div>
+      <p class="note">Merge existing groups with exactly the same nonempty name, keeping the first group’s name and color. Ungrouped tabs follow your selected grouping rules. Existing browser and extension tabs stay inside their groups when merging. Ungrouped browser pages, pinned tabs, incognito windows, and groups containing excluded websites are left alone.</p>
+      <label class="toggle" for="toolbarFollow"><input id="toolbarFollow" name="toolbarFollow" type="checkbox"> Use the “Group by” setting</label>
+      <fieldset id="toolbar-override">
+        <legend>Use a separate grouping mode</legend>
+        <label class="toggle" for="toolbar-domain"><input id="toolbar-domain" name="toolbarMode" type="radio" value="domain"> Domain</label>
+        <label class="toggle" for="toolbar-source"><input id="toolbar-source" name="toolbarMode" type="radio" value="source"> Source tab</label>
+      </fieldset>
+      <p class="note">Source mode uses known opener relationships, including relationships TABLA recorded earlier. Tabs with unknown origins stay untouched. Right-click the icon to undo the last grouping change in that window.</p>
+      <label class="toggle" for="toolbarCollapse"><input id="toolbarCollapse" name="toolbarCollapse" type="checkbox" aria-describedby="toolbar-collapse-help"> Collapse all groups after grouping</label>
+      <p id="toolbar-collapse-help" class="note">After the menu’s Group this window action, collapse both new and existing groups in this window, including groups that were not regrouped. This also works when there are no new groups to create.</p>
+      <div class="actions"><button id="group-now" type="button">Group this window now</button><button id="undo-now" type="button">Undo last grouping change</button></div>
+      <p class="note">These actions use your saved settings. Save any changes first.</p>
+    </section>
+    <section class="settings-card">
+      <div class="section-heading"><h2>Persistence</h2><span class="pill">Stored on this device</span></div>
+      <label class="toggle" for="persist"><input id="persist" name="persist" type="checkbox"> Save group layouts and repair missing groups after restart</label>
+      <p class="note">Saves membership, names, colors, collapsed state, tab order, and known source families as tabs change. Startup recovery waits for Chrome to restore your windows, then repairs matching tabs without reopening pages. Recent snapshots remain available below.</p>
+      <p class="note">Recovery preserves your saved groups, including groups with mixed domains. It does not rerun your grouping rules. Incognito browsing is never saved.</p>
+    </section>
+    <details class="settings-card">
+      <summary>Custom rules <span id="rule-count" class="summary-count">0 rules</span></summary>
+      <div class="details-content">
+        <p class="note">Match a hostname and its subdomains. Ungrouped matching sites share a named group during toolbar grouping, even across domains. Existing groups keep their membership, name, and color. In automatic mode, matching rules let a new tab join its source group. Auto uses the website’s favicon to choose the closest Chrome group color, with a fallback when no readable icon is available. First matching rule wins; exclusions take priority.</p>
+        <div id="rules"></div>
+        <p id="rules-empty" class="note">No custom rules yet.</p>
+        <button id="add-rule" type="button">+ Add rule</button>
+      </div>
+    </details>
+    <details class="settings-card">
+      <summary>Excluded websites <span id="exclusion-count" class="summary-count">0 websites</span></summary>
+      <div class="details-content">
+        <label for="exclusions">Hostnames, one per line<textarea id="exclusions" rows="4" placeholder="example.com&#10;accounts.google.com" spellcheck="false"></textarea></label>
+        <p class="note">Each entry includes its subdomains. Excluded tabs are left alone by automatic and toolbar grouping. Existing saved groups can still be recovered.</p>
+      </div>
+    </details>
+  </form>
+  <details id="recovery" class="settings-card transfer">
+    <summary>Recovery &amp; backups</summary>
+    <div class="details-content">
+      <p class="note">Repair groups on currently open tabs using a saved layout. Tabs are matched within windows by URL and occurrence. No tabs are opened or closed. Identical windows or duplicate URLs can make recovery ambiguous.</p>
+      <div class="actions"><button id="refresh-recovery" type="button">Refresh</button><button id="checkpoint" type="button">Save a checkpoint</button></div>
+      <p id="recovery-status" class="note" role="status"></p>
+      <div id="snapshots"></div>
+    </div>
+  </details>
+  <details id="transfer" class="settings-card transfer">
+    <summary>Import &amp; export</summary>
+    <div class="details-content">
+      <p class="note">Choose which sections to export. Import loads only the included sections for review and leaves everything else unchanged. Click Save to apply them, or Discard to restore your saved settings.</p>
+      <fieldset class="export-sections">
+        <legend>Include in export</legend>
+        <div class="export-section-choices">
+          <label class="toggle"><input type="checkbox" data-export-section="automaticGrouping" checked> Automatic grouping</label>
+          <label class="toggle"><input type="checkbox" data-export-section="toolbarIcon" checked> Menu grouping action</label>
+          <label class="toggle"><input type="checkbox" data-export-section="persistence" checked> Persistence</label>
+          <label class="toggle"><input type="checkbox" data-export-section="customRules" checked> Custom rules</label>
+          <label class="toggle"><input type="checkbox" data-export-section="excludedWebsites" checked> Excluded websites</label>
+        </div>
+      </fieldset>
+      <div class="transfer-input-heading">
+        <label for="transfer-text">Export / import string</label>
+        <button id="copy-transfer" type="button" aria-label="Copy to clipboard" title="Copy to clipboard" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+      </div>
+      <textarea id="transfer-text" rows="4" spellcheck="false" placeholder="Click Export or paste a TABLA export string here."></textarea>
+      <div class="transfer-actions"><button id="export" type="button">Export &amp; copy</button><button id="import" class="primary" type="button">Import &amp; review</button><button id="import-save" class="primary" type="submit" form="settings" disabled>Save</button><span id="import-notice" class="note" role="status" hidden>Review your changes, then click Save to apply them.</span></div>
+      <p id="transfer-status" role="status"></p>
+    </div>
+  </details>
+  <details id="changelog" class="settings-card transfer">
+    <summary>Changelog <span class="changelog-latest">Latest: 1.0.0</span></summary>
+    <div class="details-content changelog-content">
+      <h3>Version 1.0.0 <time class="note" datetime="2026-11-05">November 5, 2026</time></h3>
+      <ul><li>TABLA is born.</li></ul>
+    </div>
+  </details>
+  <footer class="credit note">Created by <a href="https://github.com/hgurb" target="_blank" rel="noopener noreferrer">hgurb <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297C5.37.297 0 5.67 0 12.297c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.04c-3.338.724-4.043-1.61-4.043-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.084 1.838 1.237 1.838 1.237 1.07 1.835 2.809 1.305 3.495.998.108-.776.418-1.305.762-1.605-2.665-.3-5.466-1.334-5.466-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.301 1.23a11.51 11.51 0 0 1 6.006 0c2.291-1.552 3.297-1.23 3.297-1.23.655 1.652.243 2.873.12 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.805 5.625-5.478 5.921.43.372.823 1.102.823 2.222v3.293c0 .322.216.694.825.576C20.565 22.092 24 17.595 24 12.297c0-6.627-5.373-12-12-12"/></svg></a></footer>
+</main>
+<template id="rule-template">
+  <div class="rule-row">
+    <label>Hostname<input class="rule-host" type="text" placeholder="github.com" maxlength="253" required spellcheck="false"></label>
+    <label>Group name<input class="rule-name" type="text" placeholder="Development" maxlength="100" required></label>
+    <label>Color<select class="rule-color"><option value="auto">Auto</option><option>blue</option><option>red</option><option>yellow</option><option>green</option><option>pink</option><option>purple</option><option>cyan</option><option>orange</option><option>grey</option></select></label>
+    <button class="remove-rule" type="button">Remove</button>
+  </div>
+</template>
+<dialog id="repair-dialog" aria-labelledby="repair-title">
+  <h2 id="repair-title">Repair groups from this snapshot?</h2>
+  <p>This may rearrange and replace groups on matching open tabs across your windows. Tabs will not be opened or closed.</p>
+  <p id="repair-description" class="note"></p>
+  <div class="actions"><button id="cancel-repair" type="button">Cancel</button><button id="confirm-repair" class="primary" type="button">Repair groups</button></div>
+</dialog>
+</body>
+</html>
