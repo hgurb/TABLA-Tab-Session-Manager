@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TABLA Tab & Session Manager",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automatic tab grouping by domain or source, saved sessions, and local group recovery across restarts.",
   "minimum_chrome_version": "120",
   "permissions": [

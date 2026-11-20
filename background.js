@@ -16,7 +16,9 @@ function rememberGroupTab(state, tab) {
 async function seedGroupFocus() {
   const state = await readState();
   state.groupCollapsed ??= {}; state.groupLastActive ??= {}; state.ignoreGroupExpand ??= {};
+  state.tabMembership = {};
   for (const win of await normalWindows()) {
+    for (const tab of win.tabs) state.tabMembership[tab.id] = tab.groupId;
     for (const group of await chrome.tabGroups.query({windowId:win.id})) state.groupCollapsed[group.id] = group.collapsed;
     rememberGroupTab(state,win.tabs.find(tab=>tab.active));
   }
@@ -103,7 +105,7 @@ async function resumeAfterReload(state) {
 async function initialize(reload = false) {
   const existing = await readState();
   if (existing) {
-    if (!existing.groupCollapsed) await seedGroupFocus();
+    if (!existing.groupCollapsed || !existing.tabMembership) await seedGroupFocus();
     // Alarms may be delayed while Chrome is suspended. A later event/request
     // must also finish expired recovery rather than leaving controls locked.
     if (existing.recovering && Date.now() - existing.boot >= 120000) {
@@ -173,6 +175,7 @@ async function touch() {
 async function registerTab(tab, canAutoGroup) {
   if (tab.incognito) return;
   const state = await readState();
+  state.tabMembership ??= {}; state.tabMembership[tab.id] = tab.groupId;
   if (state.restoredTabs?.includes(tab.id)) {
     state.restoredTabs = state.restoredTabs.filter(id => id !== tab.id);
     state.records[tab.id] = { family: crypto.randomUUID() };
@@ -187,6 +190,32 @@ async function registerTab(tab, canAutoGroup) {
   if (canAutoGroup && !state.recovering) state.pending[tab.id] = { opener: tab.openerTabId ?? null, sourceHint: state.activeTabs?.[tab.windowId] };
   if (!canAutoGroup && tab.active) { state.activeTabs ??= {}; state.activeTabs[tab.windowId] = tab.id; }
   await writeState(state);
+}
+async function ungroupAfterMove(groupId) {
+  if ((await readState()).recovering || !(await readSettings()).removeSingleOnMove) return;
+  try {
+    const tabs = await chrome.tabs.query({groupId});
+    if (tabs.length !== 1 || tabs[0].incognito) return;
+    const win = await chrome.windows.get(tabs[0].windowId);
+    if (win.type === 'normal') await chrome.tabs.ungroup(tabs[0].id);
+  } catch (error) {
+    // Chrome can report membership changes before the native drag has ended.
+    if (/tabs cannot be edited right now|user may be dragging/i.test(error.message || '')) await alarm(`single-move:${groupId}`,250);
+    else if (!/no (?:tab|window|group)|not found|does not exist/i.test(error.message || '')) throw error;
+  }
+}
+async function tabMembershipChanged(tabId) {
+  let tab;
+  try { tab = await chrome.tabs.get(tabId); }
+  catch (error) { if (/no tab|not found/i.test(error.message || '')) return; throw error; }
+  if (tab.incognito) return;
+  const state = await readState(); state.tabMembership ??= {};
+  const previous = state.tabMembership[tabId];
+  if (previous === tab.groupId) return;
+  state.tabMembership[tabId] = tab.groupId; await writeState(state);
+  // Check only the group this tab left. Unrelated, intentionally single-tab
+  // groups and newly created groups must retain their membership.
+  if (previous >= 0) await ungroupAfterMove(previous);
 }
 async function keepUngrouped(tab) {
   // Leave positioning to Chrome and the tab's creator. Chrome may choose a group
@@ -752,6 +781,7 @@ chrome.tabs.onUpdated.addListener((tabId, change) => {
   if (change.url || change.status || change.groupId !== undefined || change.pinned !== undefined || Object.hasOwn(change, 'favIconUrl')) run(async () => {
     await tryAuto(tabId);
     if (change.groupId !== undefined) {
+      await tabMembershipChanged(tabId);
       try {
         const tab = await chrome.tabs.get(tabId);
         if (tab.active) { const state = await readState(); rememberGroupTab(state,tab); await writeState(state); await collapseInactive({windowId:tab.windowId}); }
@@ -764,19 +794,21 @@ chrome.tabs.onUpdated.addListener((tabId, change) => {
     await touch();
   });
 });
-chrome.tabs.onMoved.addListener(() => run(touch));
-chrome.tabs.onAttached.addListener(() => run(touch));
-chrome.tabs.onDetached.addListener(() => run(touch));
+chrome.tabs.onMoved.addListener(tabId => run(async () => { await tabMembershipChanged(tabId); await touch(); }));
+chrome.tabs.onAttached.addListener(tabId => run(async () => { await tabMembershipChanged(tabId); await touch(); }));
+chrome.tabs.onDetached.addListener(tabId => run(async () => { await tabMembershipChanged(tabId); await touch(); }));
 chrome.tabs.onReplaced.addListener((addedId, removedId) => run(async () => {
   const state = await readState();
   for (const [windowId,id] of Object.entries(state.manualExpansion || {})) if (id === removedId) state.manualExpansion[windowId] = addedId;
   for (const [group,id] of Object.entries(state.groupLastActive || {})) if (id === removedId) state.groupLastActive[group] = addedId;
   if (state.records[removedId]) state.records[addedId] = state.records[removedId];
   if (state.pending[removedId]) state.pending[addedId] = state.pending[removedId];
+  if (state.tabMembership && Object.hasOwn(state.tabMembership,removedId)) { state.tabMembership[addedId] = state.tabMembership[removedId]; delete state.tabMembership[removedId]; }
   delete state.records[removedId]; delete state.pending[removedId]; await writeState(state); await touch();
 }));
 chrome.tabs.onRemoved.addListener((tabId, info) => run(async () => {
   const state = await readState(); delete state.pending[tabId]; delete state.records[tabId];
+  if (state.tabMembership) delete state.tabMembership[tabId];
   for (const [group,id] of Object.entries(state.groupLastActive || {})) if (id === tabId) delete state.groupLastActive[group];
   const restoreCleanup = Boolean(state.restoreClosures?.[tabId]);
   if (state.restoreClosures) delete state.restoreClosures[tabId];
@@ -835,6 +867,7 @@ chrome.tabGroups.onRemoved.addListener(group => run(async () => {
   await writeState(state); await forgetAutoColorGroup(group.id); await touch();
 }));
 chrome.alarms.onAlarm.addListener(event => run(async () => {
+  if (event.name.startsWith('single-move:')) { await ungroupAfterMove(Number(event.name.slice('single-move:'.length))); await touch(); return; }
   if (event.name.startsWith('auto-collapse:')) {
     await collapseInactive({windowId:Number(event.name.slice('auto-collapse:'.length))}); return;
   }

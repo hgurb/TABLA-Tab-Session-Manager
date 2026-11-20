@@ -3,7 +3,7 @@ import { parse } from './vendor/tldts.js';
 export const COLORS = ['blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange', 'grey'];
 export const DEFAULTS = Object.freeze({
   enabled: true, groupBy: 'domain', naming: 'domain', combineExisting: false,
-  maxTabs: 0, removeSingle: true, autoCollapse: true, focusExpandedGroup: true,
+  maxTabs: 0, removeSingle: true, removeSingleOnMove: true, autoCollapse: true, focusExpandedGroup: true,
   toolbarFollow: true, toolbarMode: 'domain', toolbarCollapse: true, persist: true,
   rules: [], exclusions: []
 });

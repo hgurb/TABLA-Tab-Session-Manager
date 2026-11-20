@@ -52,7 +52,8 @@
       </div>
       <p id="max-help" class="note">0 = unlimited; otherwise choose 2–999. When an automatic group is full, the new tab stays outside. Grouping splits new sets as needed; existing groups are never split.</p>
       <p class="note">Tabs that do not join a group keep the placement chosen by Chrome or their creator. TABLA only removes incompatible inherited group membership; Chrome may place the ungrouped tab at a group boundary. Tabs created inside a group are checked even when no opening-tab information is provided.</p>
-      <label class="toggle" for="removeSingle"><input id="removeSingle" name="removeSingle" type="checkbox"> Ungroup the last tab when a group drops to one tab</label>
+      <label class="toggle" for="removeSingle"><input id="removeSingle" name="removeSingle" type="checkbox"> Ungroup the last remaining tab when other tabs are closed</label>
+      <label class="toggle" for="removeSingleOnMove"><input id="removeSingleOnMove" name="removeSingleOnMove" type="checkbox"> Ungroup the last remaining tab when other tabs are moved out</label>
       <label class="toggle" for="autoCollapse"><input id="autoCollapse" name="autoCollapse" type="checkbox" aria-describedby="auto-collapse-help"> Automatically collapse inactive groups in the active window</label>
       <p class="note" id="auto-collapse-help">Keep the selected tab’s group open and collapse other groups in the focused window. Selecting an ungrouped tab collapses every group. Applies when enabled, when switching tabs or windows, and after startup recovery finishes.</p>
       <label class="toggle" for="focusExpandedGroup"><input id="focusExpandedGroup" name="focusExpandedGroup" type="checkbox" aria-describedby="focus-expanded-help"> Switch to the last active tab when expanding a group</label>
@@ -132,8 +133,10 @@
     </div>
   </details>
   <details id="changelog" class="settings-card transfer">
-    <summary>Changelog <span class="changelog-latest">Latest: 1.0.0</span></summary>
+    <summary>Changelog <span class="changelog-latest">Latest: 1.0.1</span></summary>
     <div class="details-content changelog-content">
+      <h3>Version 1.0.1 <time class="note" datetime="2026-11-21">November 21, 2026</time></h3>
+      <ul><li>Added a separate option, enabled by default, to ungroup the last remaining tab when other tabs are moved out.</li></ul>
       <h3>Version 1.0.0 <time class="note" datetime="2026-11-05">November 5, 2026</time></h3>
       <ul><li>TABLA is born.</li></ul>
     </div>

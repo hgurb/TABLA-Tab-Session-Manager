@@ -1,7 +1,7 @@
 import { DEFAULTS, settingsFrom, parseImport } from './core.js';
 
 export const SECTIONS = {
-  automaticGrouping: { label: 'Automatic grouping', keys: ['enabled', 'groupBy', 'naming', 'combineExisting', 'maxTabs', 'removeSingle', 'autoCollapse', 'focusExpandedGroup'] },
+  automaticGrouping: { label: 'Automatic grouping', keys: ['enabled', 'groupBy', 'naming', 'combineExisting', 'maxTabs', 'removeSingle', 'removeSingleOnMove', 'autoCollapse', 'focusExpandedGroup'] },
   toolbarIcon: { label: 'Menu grouping action', keys: ['toolbarFollow', 'toolbarMode', 'toolbarCollapse'] },
   persistence: { label: 'Persistence', keys: ['persist'] },
   customRules: { label: 'Custom rules', keys: ['rules'] },
@@ -21,7 +21,7 @@ function checkSections(sections) {
     // Older exports contained the now-retired ungrouped-tab positioning option.
     const legacyKeys = name === 'automaticGrouping' ? ['crossDomainSide'] : [];
     if (Object.keys(section).some(key => !definition.keys.includes(key) && !legacyKeys.includes(key))) throw new Error(`Unsupported setting in ${definition.label}. Update TABLA before importing it.`);
-    if (definition.keys.some(key => !Object.hasOwn(section, key) && !['toolbarCollapse','focusExpandedGroup'].includes(key))) throw new Error(`Incomplete ${definition.label} settings.`);
+    if (definition.keys.some(key => !Object.hasOwn(section, key) && !['toolbarCollapse','focusExpandedGroup','removeSingleOnMove'].includes(key))) throw new Error(`Incomplete ${definition.label} settings.`);
     const compatible = {...section};
     // Missing options in older exports retain their historical off behavior.
     for (const key of ['toolbarCollapse','focusExpandedGroup']) if (definition.keys.includes(key) && !Object.hasOwn(section,key)) compatible[key] = false;

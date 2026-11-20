@@ -2,11 +2,12 @@
 
 Group Chrome tabs, organize windows, save sessions, and recover group layouts locally.
 
-**1.0.0 — TABLA is born.**
+**1.0.1**
 
 ## Features
 
 - Automatic grouping by domain or opening tab, with favicon colors, custom rules, exclusions, and size limits.
+- Separate options to ungroup the last remaining tab after other tabs are closed or moved out.
 - Merge same-named groups intact while keeping mixed-domain tabs and the first group’s name and color.
 - Group, ungroup, collapse/expand, or move groups left/right in one window or all regular windows.
 - Merge windows into the current window while preserving tabs, pins, and existing groups.
